@@ -1,0 +1,40 @@
+services:
+  companion:
+    build: .
+    restart: unless-stopped
+    environment:
+      BIND_HOST: 0.0.0.0
+      PORT: 4020
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:4020}
+      DATA_SOURCE_MODE: ${DATA_SOURCE_MODE:-fixture}
+      TOKEN_SECRET: ${TOKEN_SECRET:?set TOKEN_SECRET in .env}
+      SETUP_SECRET: ${SETUP_SECRET:?set SETUP_SECRET in .env}
+      TOKEN_STORE_PATH: /data/read-tokens.json
+      DEVICE_SECRET_REQUIRED: "true"
+      # Set DATA_SOURCE_MODE=teslamate and point these at the private
+      # TeslaMate network when deploying next to TeslaMate.
+      TESLAMATE_DB_HOST: database
+      TESLAMATE_DB_PORT: 5432
+      TESLAMATE_DB_NAME: teslamate
+      TESLAMATE_DB_USER: teslamate_readonly
+      TESLAMATE_DB_PASSWORD: ${TESLAMATE_DB_PASSWORD:-}
+      MQTT_ENABLED: "false"
+      MQTT_URL: mqtt://mosquitto:1883
+      MQTT_TOPIC_PREFIX: teslamate/cars
+      PUSH_NOTIFICATIONS_ENABLED: "false"
+      NOTIFICATION_STATE_STORE_PATH: /data/notification-state.json
+      NOTIFICATION_POLL_INTERVAL_MS: 45000
+      POST_TRIP_WATCH_MINUTES: 15
+      APNS_ENABLED: "false"
+      APNS_ENVIRONMENT: development
+      APNS_TEAM_ID: ""
+      APNS_KEY_ID: ""
+      APNS_BUNDLE_ID: com.example.ttdeck
+      APNS_PRIVATE_KEY_PATH: ""
+    ports:
+      - "4020:4020"
+    volumes:
+      - companion-data:/data
+
+volumes:
+  companion-data:

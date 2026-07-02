@@ -1,0 +1,16 @@
+{
+  "name": "ttdeck-companion-server",
+  "version": "0.1.0",
+  "description": "Self-hosted read-only Companion Server for TTDeck.",
+  "license": "AGPL-3.0-only",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "mqtt": "^5.15.1",
+    "pg": "^8.22.0",
+    "qrcode": "^1.5.4"
+  }
+}
