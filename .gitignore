@@ -3,6 +3,6 @@ node_modules/
 .env.*
 !.env.example
 *.log
-data/
+/data/
 read-tokens.json
 notification-state.json

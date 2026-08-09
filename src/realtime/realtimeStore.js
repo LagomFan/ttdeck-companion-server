@@ -83,6 +83,96 @@ function hasCoordinate(latitude, longitude) {
   return latitude !== null && latitude !== undefined && longitude !== null && longitude !== undefined;
 }
 
+function firstNonNull(...values) {
+  return values.find((value) => value !== null && value !== undefined) ?? null;
+}
+
+function distanceToKm(payload) {
+  const kilometers = optionalNumber(payload.distance_to_arrival_km ?? payload.distance_km);
+  if (kilometers !== null) return kilometers;
+
+  const miles = optionalNumber(payload.miles_to_arrival);
+  return miles === null ? null : miles * 1.609344;
+}
+
+function buildRoute(fields) {
+  const hasActiveRoute = Object.hasOwn(fields, "active_route");
+  const scalarActiveRoute = hasActiveRoute && typeof fields.active_route === "string"
+    ? optionalString(fields.active_route)
+    : null;
+  const malformedStructuredRoute = scalarActiveRoute !== null && (
+    scalarActiveRoute.startsWith("{") || scalarActiveRoute.startsWith("[")
+  );
+  const payload = fields.active_route && typeof fields.active_route === "object" && !Array.isArray(fields.active_route)
+    ? fields.active_route
+    : {};
+  const hasStructuredRoute = Object.keys(payload).length > 0;
+  const location = payload.location && typeof payload.location === "object" && !Array.isArray(payload.location)
+    ? payload.location
+    : {};
+  const error = optionalString(payload.error);
+  const unavailable = error === "No active route available";
+
+  if (unavailable || (hasActiveRoute && !hasStructuredRoute && malformedStructuredRoute)) {
+    return {
+      activeRoute: null,
+      available: false,
+      destination: null,
+      latitude: null,
+      longitude: null,
+      energyAtArrivalPercent: null,
+      distanceToArrivalKm: null,
+      minutesToArrival: null,
+      trafficDelayMinutes: null,
+      error
+    };
+  }
+
+  const destination = firstNonNull(
+    optionalString(payload.destination),
+    optionalString(payload.name),
+    scalarActiveRoute,
+    optionalString(fields.active_route_destination)
+  );
+  const latitude = firstNonNull(
+    optionalNumber(location.latitude),
+    optionalNumber(payload.latitude),
+    optionalNumber(fields.active_route_latitude)
+  );
+  const longitude = firstNonNull(
+    optionalNumber(location.longitude),
+    optionalNumber(payload.longitude),
+    optionalNumber(fields.active_route_longitude)
+  );
+  const energyAtArrivalPercent = firstNonNull(
+    optionalInt(payload.energy_at_arrival),
+    optionalInt(payload.energyAtArrivalPercent)
+  );
+  const distanceToArrivalKm = distanceToKm(payload);
+  const minutesToArrival = firstNonNull(
+    optionalInt(payload.minutes_to_arrival),
+    optionalInt(payload.minutesToArrival)
+  );
+  const trafficDelayMinutes = firstNonNull(
+    optionalInt(payload.traffic_minutes_delay),
+    optionalInt(payload.trafficDelayMinutes)
+  );
+  const available = Boolean(destination || hasCoordinate(latitude, longitude));
+
+  return {
+    activeRoute: destination,
+    available,
+    destination,
+    latitude,
+    longitude,
+    energyAtArrivalPercent,
+    distanceToArrivalKm,
+    minutesToArrival,
+    trafficDelayMinutes,
+    error
+  };
+}
+
 function pressureSeverity(fields) {
   const warnings = [
     fields.tpms_soft_warning_fl,
@@ -147,10 +237,13 @@ function buildSnapshot({ vehicleId, fields, connection, config, now = new Date()
       lastError: connection.lastError
     },
     vehicle: {
-      displayName: fields.display_name ?? null,
-      model: fields.model ?? null,
-      version: fields.version ?? null,
-      state: fields.state ?? null,
+      displayName: optionalString(fields.display_name),
+      model: optionalString(fields.model),
+      trimBadging: optionalString(fields.trim_badging),
+      exteriorColor: optionalString(fields.exterior_color),
+      wheelType: optionalString(fields.wheel_type),
+      version: optionalString(fields.version),
+      state: optionalString(fields.state),
       since: toIso(fields.since)
     },
     location: {
@@ -206,12 +299,7 @@ function buildSnapshot({ vehicleId, fields, connection, config, now = new Date()
       odometerKm: optionalNumber(fields.odometer),
       heading: optionalInt(fields.heading)
     },
-    route: {
-      activeRoute: optionalString(fields.active_route),
-      destination: optionalString(fields.active_route_destination),
-      latitude: optionalNumber(fields.active_route_latitude),
-      longitude: optionalNumber(fields.active_route_longitude)
-    },
+    route: buildRoute(fields),
     software: {
       updateAvailable: optionalBoolean(fields.update_available),
       version: fields.version ?? null
@@ -251,7 +339,7 @@ class RealtimeStore {
   setError(message) {
     this.setConnection({
       connected: false,
-      lastError: message || "MQTT connection failed."
+      lastError: message || "Live telemetry feed connection failed."
     });
   }
 
@@ -328,9 +416,9 @@ class RealtimeStore {
     if (!this.config.enabled) {
       return {
         id: "mqtt",
-        label: "MQTT",
+        label: "Live Telemetry Feed",
         status: "skipped",
-        message: "MQTT realtime adapter is disabled."
+        message: "Live telemetry feed is disabled."
       };
     }
 
@@ -338,19 +426,19 @@ class RealtimeStore {
       const vehicleCount = this.vehicles.size;
       return {
         id: "mqtt",
-        label: "MQTT",
+        label: "Live Telemetry Feed",
         status: vehicleCount > 0 ? "ok" : "warning",
         message: vehicleCount > 0
-          ? `MQTT connected; realtime fields received for ${vehicleCount} vehicle(s).`
-          : "MQTT connected; waiting for TeslaMate retained vehicle topics."
+          ? `Live telemetry feed connected; realtime fields received for ${vehicleCount} vehicle(s).`
+          : "Live telemetry feed connected; waiting for retained vehicle topics."
       };
     }
 
     return {
       id: "mqtt",
-      label: "MQTT",
+      label: "Live Telemetry Feed",
       status: "warning",
-      message: this.connection.lastError || "MQTT realtime adapter is not connected yet."
+      message: this.connection.lastError || "Live telemetry feed is not connected yet."
     };
   }
 }

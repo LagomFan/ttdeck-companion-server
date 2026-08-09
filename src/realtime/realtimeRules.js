@@ -16,8 +16,8 @@ function buildRealtimeEvents(snapshot) {
     events.push(event({
       id: "mqtt-disconnected",
       severity: "warning",
-      title: "MQTT disconnected",
-      message: "The Companion Server is not currently connected to TeslaMate MQTT.",
+      title: "Live telemetry feed disconnected",
+      message: "The Companion Server is not currently connected to the live telemetry feed.",
       occurredAt
     }));
   }
@@ -27,7 +27,7 @@ function buildRealtimeEvents(snapshot) {
       id: "realtime-stale",
       severity: "warning",
       title: "Realtime data stale",
-      message: `No TeslaMate MQTT update has been received for ${snapshot.connection.ageSeconds} seconds.`,
+      message: `No live telemetry update has been received for ${snapshot.connection.ageSeconds} seconds.`,
       occurredAt
     }));
   }
@@ -37,7 +37,7 @@ function buildRealtimeEvents(snapshot) {
       id: "vehicle-unlocked",
       severity: "warning",
       title: "Vehicle unlocked",
-      message: "TeslaMate reports the vehicle is unlocked.",
+      message: "The live telemetry feed reports the vehicle is unlocked.",
       occurredAt
     }));
   }
@@ -47,7 +47,7 @@ function buildRealtimeEvents(snapshot) {
       id: "doors-open",
       severity: "critical",
       title: "Door open",
-      message: "TeslaMate reports at least one door is open.",
+      message: "The live telemetry feed reports at least one door is open.",
       occurredAt
     }));
   }
@@ -57,7 +57,7 @@ function buildRealtimeEvents(snapshot) {
       id: "windows-open",
       severity: "warning",
       title: "Window open",
-      message: "TeslaMate reports at least one window is open.",
+      message: "The live telemetry feed reports at least one window is open.",
       occurredAt
     }));
   }
@@ -66,8 +66,8 @@ function buildRealtimeEvents(snapshot) {
     events.push(event({
       id: "frunk-open",
       severity: "critical",
-      title: "Frunk open",
-      message: "TeslaMate reports the frunk is open.",
+      title: "Front trunk open",
+      message: "The live telemetry feed reports the front trunk is open.",
       occurredAt
     }));
   }
@@ -77,7 +77,7 @@ function buildRealtimeEvents(snapshot) {
       id: "trunk-open",
       severity: "critical",
       title: "Trunk open",
-      message: "TeslaMate reports the trunk is open.",
+      message: "The live telemetry feed reports the trunk is open.",
       occurredAt
     }));
   }
@@ -87,7 +87,7 @@ function buildRealtimeEvents(snapshot) {
       id: "parked-movement",
       severity: "critical",
       title: "Parked movement",
-      message: "TeslaMate reports movement while the vehicle is in Park.",
+      message: "The live telemetry feed reports movement while the vehicle is in Park.",
       occurredAt
     }));
   }
@@ -97,7 +97,7 @@ function buildRealtimeEvents(snapshot) {
       id: "tire-pressure-warning",
       severity: "warning",
       title: "Tyre pressure warning",
-      message: "TeslaMate reports a TPMS soft warning.",
+      message: "The live telemetry feed reports a tyre pressure warning.",
       occurredAt
     }));
   }

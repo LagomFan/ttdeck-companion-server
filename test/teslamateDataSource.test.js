@@ -4,15 +4,16 @@ const { buildOverview, buildSafety } = require("../src/data/summaries");
 const { TeslaMateDataSource } = require("../src/data/teslamateDataSource");
 
 function createFakePool(options = {}) {
+  const displayName = Object.hasOwn(options, "displayName") ? options.displayName : "Model Y";
   const tripAddresses = options.tripAddresses || {
     start: "Office",
     end: "Home"
   };
   const tripCoordinates = options.tripCoordinates || {
-    startLatitude: 10.0001,
-    startLongitude: 20.0001,
-    endLatitude: 10.0003,
-    endLongitude: 20.0003
+    startLatitude: 37.3318,
+    startLongitude: -122.0312,
+    endLatitude: 37.3947,
+    endLongitude: -122.1503
   };
 
   return {
@@ -33,8 +34,8 @@ function createFakePool(options = {}) {
           rows: [
             {
               id: 1,
-              display_name: "Model Y",
-              vin: "TESTVIN0000000000",
+              display_name: displayName,
+              vin: "TESTVIN0000000001",
               state: "asleep",
               last_updated_at: new Date("2026-06-25T08:00:00.000Z")
             }
@@ -48,15 +49,18 @@ function createFakePool(options = {}) {
           rows: [
             {
               id: 1,
-              display_name: "Model Y",
-              vin: "TESTVIN0000000000",
+              display_name: displayName,
+              vin: "TESTVIN0000000001",
               model: "y",
+              trim_badging: "50",
+              exterior_color: "Quicksilver",
+              wheel_type: "Crossflow19",
               efficiency: 170,
               state: "asleep",
               last_updated_at: new Date("2026-06-25T08:00:00.000Z"),
               position_date: new Date("2026-06-25T08:00:00.000Z"),
-              latitude: 10.0003,
-              longitude: 20.0003,
+              latitude: 37.3947,
+              longitude: -122.1503,
               battery_level: 78,
               usable_battery_level: 75,
               odometer: 13021.59,
@@ -188,8 +192,8 @@ function createFakePool(options = {}) {
             {
               id: 1,
               name: "Home",
-              latitude: 10.0003,
-              longitude: 20.0003,
+              latitude: 37.3947,
+              longitude: -122.1503,
               radius: 150
             }
           ]
@@ -200,6 +204,9 @@ function createFakePool(options = {}) {
         return {
           rows: [
             { table_name: "cars", column_name: "model" },
+            { table_name: "cars", column_name: "trim_badging" },
+            { table_name: "cars", column_name: "exterior_color" },
+            { table_name: "cars", column_name: "wheel_type" },
             { table_name: "cars", column_name: "efficiency" },
             { table_name: "positions", column_name: "latitude" },
             { table_name: "positions", column_name: "longitude" },
@@ -234,8 +241,8 @@ function createFakePool(options = {}) {
               start_ideal_range_km: 250,
               end_ideal_range_km: 307,
               cost: 0,
-              start_latitude: 10.0003,
-              start_longitude: 20.0003
+              start_latitude: 37.3947,
+              start_longitude: -122.1503
             },
             {
               id: 20,
@@ -245,8 +252,8 @@ function createFakePool(options = {}) {
               start_ideal_range_km: 250,
               end_ideal_range_km: 307,
               cost: 0,
-              start_latitude: 10.0003,
-              start_longitude: 20.0003
+              start_latitude: 37.3947,
+              start_longitude: -122.1503
             },
             {
               id: 19,
@@ -256,8 +263,8 @@ function createFakePool(options = {}) {
               start_ideal_range_km: 250,
               end_ideal_range_km: 250,
               cost: 0,
-              start_latitude: 10.0003,
-              start_longitude: 20.0003
+              start_latitude: 37.3947,
+              start_longitude: -122.1503
             }
           ]
         };
@@ -265,12 +272,15 @@ function createFakePool(options = {}) {
 
       if (text.includes("WHERE drive_id = $1")) {
         assert.deepEqual(params, [10]);
+        if (options.tripPoints) {
+          return { rows: options.tripPoints };
+        }
         return {
           rows: [
             {
               date: new Date("2026-06-24T15:20:00.000Z"),
-              latitude: 10.0001,
-              longitude: 20.0001,
+              latitude: 37.3318,
+              longitude: -122.0312,
               speed: 0,
               power: 0,
               battery_heater: false,
@@ -279,6 +289,8 @@ function createFakePool(options = {}) {
               est_battery_range_km: 251,
               ideal_battery_range_km: 253,
               rated_battery_range_km: 251,
+              inside_temp: 22.1,
+              outside_temp: 18.1,
               tpms_pressure_fl: 2.9,
               tpms_pressure_fr: 2.9,
               tpms_pressure_rl: 2.8,
@@ -286,8 +298,8 @@ function createFakePool(options = {}) {
             },
             {
               date: new Date("2026-06-24T15:35:00.000Z"),
-              latitude: 10.0002,
-              longitude: 20.0002,
+              latitude: 37.3669,
+              longitude: -122.0834,
               speed: 78,
               power: 12,
               battery_heater: null,
@@ -296,6 +308,8 @@ function createFakePool(options = {}) {
               est_battery_range_km: null,
               ideal_battery_range_km: null,
               rated_battery_range_km: null,
+              inside_temp: 22.5,
+              outside_temp: 18.3,
               tpms_pressure_fl: null,
               tpms_pressure_fr: null,
               tpms_pressure_rl: null,
@@ -303,8 +317,8 @@ function createFakePool(options = {}) {
             },
             {
               date: new Date("2026-06-24T15:58:00.000Z"),
-              latitude: 10.0003,
-              longitude: 20.0003,
+              latitude: 37.3947,
+              longitude: -122.1503,
               speed: 0,
               power: 12,
               battery_heater: false,
@@ -313,6 +327,8 @@ function createFakePool(options = {}) {
               est_battery_range_km: 242,
               ideal_battery_range_km: 244,
               rated_battery_range_km: 242,
+              inside_temp: 22.7,
+              outside_temp: 18.5,
               tpms_pressure_fl: 2.9,
               tpms_pressure_fr: 2.9,
               tpms_pressure_rl: 2.8,
@@ -400,11 +416,28 @@ test("TeslaMate data source maps vehicle list rows to API summaries", async () =
     {
       id: "1",
       displayName: "Model Y",
-      vinSuffix: "0000",
+      vinSuffix: "0001",
       state: "asleep",
       lastUpdatedAt: "2026-06-25T08:00:00.000Z"
     }
   ]);
+});
+
+test("TeslaMate data source uses a generic display name when source rows are unnamed", async () => {
+  const pool = createFakePool({ displayName: null });
+  const dataSource = new TeslaMateDataSource({ pool });
+
+  const vehicles = await dataSource.listVehicles();
+  const vehicle = await dataSource.getVehicle("1");
+  const vehicleQueries = pool.queries.filter((query) => query.text.includes("FROM cars c"));
+
+  assert.equal(vehicles[0].displayName, "Vehicle");
+  assert.equal(vehicle.displayName, "Vehicle");
+  assert.equal(vehicleQueries.length >= 2, true);
+  for (const query of vehicleQueries) {
+    assert.match(query.text, /'Vehicle'\) AS display_name/);
+    assert.doesNotMatch(query.text, /'Tesla'\) AS display_name/);
+  }
 });
 
 test("TeslaMate data source maps Postgres rows to vehicle snapshot shape", async () => {
@@ -420,6 +453,9 @@ test("TeslaMate data source maps Postgres rows to vehicle snapshot shape", async
   assert.equal(vehicle.battery.percent, 78);
   assert.equal(vehicle.battery.estimatedKm, 382);
   assert.equal(vehicle.details.model, "y");
+  assert.equal(vehicle.details.trimBadging, "50");
+  assert.equal(vehicle.details.exteriorColor, "Quicksilver");
+  assert.equal(vehicle.details.wheelType, "Crossflow19");
   assert.equal(vehicle.details.odometerKm, 13021.59);
   assert.equal(vehicle.location.label, "Home");
   assert.equal(vehicle.charging.pluggedIn, true);
@@ -429,13 +465,25 @@ test("TeslaMate data source maps Postgres rows to vehicle snapshot shape", async
   assert.equal(vehicle.charging.recentSessions.length, 1);
   assert.equal(vehicle.charging.recentSessions[0].id, "charge-20");
   assert.equal(vehicle.charging.recentSessions[0].endedAt, "2026-06-24T08:15:00.000Z");
-  assert.equal(vehicle.charging.recentSessions[0].location, "10.00030, 20.00030");
-  assert.equal(vehicle.charging.recentSessions[0].latitude, 10.0003);
-  assert.equal(vehicle.charging.recentSessions[0].longitude, 20.0003);
+  assert.equal(vehicle.charging.recentSessions[0].location, "37.39470, -122.15030");
+  assert.equal(vehicle.charging.recentSessions[0].latitude, 37.3947);
+  assert.equal(vehicle.charging.recentSessions[0].longitude, -122.1503);
   assert.equal(vehicle.charging.recentSessions[0].averagePowerKw, 9.4);
+  assert.deepEqual(
+    vehicle.trends.healthEvents.find((event) => event.id === "postgres-snapshot"),
+    {
+      id: "postgres-snapshot",
+      occurredAt: "2026-06-25T08:00:00.000Z",
+      severity: "normal",
+      title: "Source Database snapshot",
+      message: "Source database snapshot loaded successfully."
+    }
+  );
   assert.equal(vehicle.charging.recentSessions[0].efficiencyWhPerKm, 165);
   assert.deepEqual(chargesQuery.params, [1]);
   assert.equal(chargesQuery.text.includes("LIMIT $2"), false);
+  assert.match(chargesQuery.text, /LEFT JOIN positions p ON p\.id = cp\.position_id/);
+  assert.doesNotMatch(chargesQuery.text, /LEFT JOIN LATERAL/);
   assert.equal(vehicle.trips[0].title, "Office to Home");
   assert.equal(vehicle.trips[0].energyKwh, 5.8);
   assert.equal(vehicle.trips[0].efficiencyWhPerKm, 170);
@@ -547,8 +595,125 @@ test("TeslaMate data source paginates trips and loads details separately", async
   assert.equal(trip.telemetry[1].socPercent, 58);
   assert.equal(trip.telemetry[1].usableSocPercent, 57);
   assert.equal(trip.telemetry[1].ratedRangeKm, 251);
+  assert.equal(trip.telemetry[1].insideTempC, 22.5);
+  assert.equal(trip.telemetry[1].outsideTempC, 18.3);
   assert.equal(trip.telemetry[1].batteryHeaterOn, false);
   assert.equal(trip.telemetry[1].tirePressure.frontLeftBar, 2.9);
+});
+
+test("TeslaMate trips page falls back to first and last valid positions from the same drive", async () => {
+  const pool = createFakePool();
+  const dataSource = new TeslaMateDataSource({ pool });
+
+  await dataSource.getTrips("1", { limit: "30", cursor: "0" });
+
+  const query = pool.queries.find(({ text }) => text.includes("LIMIT $2 OFFSET $3"));
+
+  assert.match(
+    query.text,
+    /LEFT JOIN LATERAL\s*\(\s*SELECT p\.latitude,\s*p\.longitude\s+FROM positions p\s+WHERE p\.drive_id = d\.id\s+AND p\.latitude IS NOT NULL\s+AND p\.longitude IS NOT NULL\s+ORDER BY p\.date ASC\s+LIMIT 1\s*\) sp_drive ON TRUE/s
+  );
+  assert.match(
+    query.text,
+    /LEFT JOIN LATERAL\s*\(\s*SELECT p\.latitude,\s*p\.longitude\s+FROM positions p\s+WHERE p\.drive_id = d\.id\s+AND p\.latitude IS NOT NULL\s+AND p\.longitude IS NOT NULL\s+ORDER BY p\.date DESC\s+LIMIT 1\s*\) ep_drive ON TRUE/s
+  );
+  assert.match(
+    query.text,
+    /COALESCE\(sg\.latitude,\s*sa\.latitude,\s*sp_exact\.latitude,\s*sp_drive\.latitude\)/
+  );
+  assert.match(
+    query.text,
+    /COALESCE\(sg\.longitude,\s*sa\.longitude,\s*sp_exact\.longitude,\s*sp_drive\.longitude\)/
+  );
+  assert.match(
+    query.text,
+    /COALESCE\(eg\.latitude,\s*ea\.latitude,\s*ep_exact\.latitude,\s*ep_drive\.latitude\)/
+  );
+  assert.match(
+    query.text,
+    /COALESCE\(eg\.longitude,\s*ea\.longitude,\s*ep_exact\.longitude,\s*ep_drive\.longitude\)/
+  );
+});
+
+test("TeslaMate trip detail carries recorded temperatures forward without backfilling from the future", async () => {
+  const pool = createFakePool({
+    tripPoints: [
+      {
+        date: new Date("2026-06-24T15:20:00.000Z"),
+        latitude: 37.3318,
+        longitude: -122.0312,
+        speed: 0,
+        power: 0,
+        inside_temp: null,
+        outside_temp: null
+      },
+      {
+        date: new Date("2026-06-24T15:20:15.000Z"),
+        latitude: 37.3320,
+        longitude: -122.0315,
+        speed: 18,
+        power: 8,
+        inside_temp: 22.1,
+        outside_temp: 18.1
+      },
+      {
+        date: new Date("2026-06-24T15:20:20.000Z"),
+        latitude: 37.3323,
+        longitude: -122.0319,
+        speed: 24,
+        power: 10,
+        inside_temp: null,
+        outside_temp: null
+      },
+      {
+        date: new Date("2026-06-24T15:20:30.000Z"),
+        latitude: 37.3328,
+        longitude: -122.0325,
+        speed: 30,
+        power: 12,
+        inside_temp: 22.3,
+        outside_temp: 18.2
+      }
+    ]
+  });
+  const dataSource = new TeslaMateDataSource({ pool });
+
+  const trip = await dataSource.getTrip("1", "drive-10");
+
+  assert.deepEqual(
+    trip.telemetry.map((point) => point.insideTempC),
+    [null, 22.1, 22.1, 22.3]
+  );
+  assert.deepEqual(
+    trip.telemetry.map((point) => point.outsideTempC),
+    [null, 18.1, 18.1, 18.2]
+  );
+});
+
+test("TeslaMate trip query carries temperatures forward before long-trip downsampling", async () => {
+  const pool = createFakePool();
+  const dataSource = new TeslaMateDataSource({ pool });
+
+  await dataSource.getTrip("1", "drive-10");
+
+  const query = pool.queries.find(({ text }) => text.includes("WHERE drive_id = $1"));
+  assert.match(
+    query.text,
+    /COUNT\(inside_temp\) OVER \(ORDER BY date ASC\) AS inside_temp_group/
+  );
+  assert.match(
+    query.text,
+    /COUNT\(outside_temp\) OVER \(ORDER BY date ASC\) AS outside_temp_group/
+  );
+  assert.match(
+    query.text,
+    /MAX\(inside_temp\) OVER \(PARTITION BY inside_temp_group\) AS inside_temp/
+  );
+  assert.match(
+    query.text,
+    /MAX\(outside_temp\) OVER \(PARTITION BY outside_temp_group\) AS outside_temp/
+  );
+  assert.ok(query.text.indexOf("MAX(inside_temp)") < query.text.indexOf("WHERE total_count <= 600"));
 });
 
 test("TeslaMate data source falls back to coordinates instead of generic trip endpoints", async () => {
@@ -563,9 +728,9 @@ test("TeslaMate data source falls back to coordinates instead of generic trip en
   const trips = await dataSource.getTrips("1", { limit: "30", cursor: "0" });
   const trip = trips.recentTrips[0];
 
-  assert.equal(trip.title, "10.00010, 20.00010 to 10.00030, 20.00030");
-  assert.equal(trip.startLocation.label, "10.00010, 20.00010");
-  assert.equal(trip.endLocation.label, "10.00030, 20.00030");
+  assert.equal(trip.title, "37.33180, -122.03120 to 37.39470, -122.15030");
+  assert.equal(trip.startLocation.label, "37.33180, -122.03120");
+  assert.equal(trip.endLocation.label, "37.39470, -122.15030");
   assert.notEqual(trip.title, "Start to End");
 });
 
@@ -588,4 +753,11 @@ test("TeslaMate diagnostics reports Postgres and vehicle checks", async () => {
   assert.equal(checks.find((check) => check.id === "schemaGeofences").status, "ok");
   assert.equal(checks.find((check) => check.id === "schemaParkingDrain").status, "ok");
   assert.equal(checks.find((check) => check.id === "liveSafety").status, "limited");
+  assert.equal(checks.find((check) => check.id === "postgres").label, "Source Database");
+  assert.equal(checks.find((check) => check.id === "dataSource").message, "Self-hosted vehicle data source is active.");
+  assert.equal(checks.find((check) => check.id === "vehicles").message, "1 vehicle record(s) found in the source database.");
+  assert.doesNotMatch(
+    checks.map(({ label, message }) => `${label}: ${message}`).join("\n"),
+    /TeslaMate|Postgres|MQTT/i
+  );
 });

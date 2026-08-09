@@ -47,6 +47,7 @@ test("loadConfig uses safe defaults", () => {
       enabled: false,
       pollIntervalMs: 45000,
       postTripWatchMinutes: 15,
+      postTripSafetyGraceSeconds: 90,
       stateStorePath: "",
       eventHistoryLimit: 500,
       apns: {
@@ -54,7 +55,7 @@ test("loadConfig uses safe defaults", () => {
         environment: "development",
         teamId: "",
         keyId: "",
-        bundleId: "com.example.ttdeck",
+        bundleId: "com.lagom.ttdeck",
         privateKey: "",
         privateKeyPath: ""
       }
@@ -66,7 +67,7 @@ test("loadConfig accepts environment overrides", () => {
   const config = loadConfig({
     BIND_HOST: "0.0.0.0",
     PORT: "5050",
-    PUBLIC_BASE_URL: "https://ttdeck.example.test",
+    PUBLIC_BASE_URL: "https://monitor.example.test",
     DATA_SOURCE_MODE: "teslamate",
     TOKEN_SECRET: "local-secret",
     SETUP_SECRET: "setup-secret",
@@ -75,7 +76,7 @@ test("loadConfig accepts environment overrides", () => {
     BIND_RATE_LIMIT_WINDOW_MS: "30000",
     BIND_RATE_LIMIT_MAX_ATTEMPTS: "5",
     NODE_ENV: "production",
-    TESLAMATE_DATABASE_URL: "postgres://db.example.test:5432/teslamate?user=readonly&password=placeholder",
+    TESLAMATE_DATABASE_URL: "postgres://readonly:secret@db.example.test:5432/teslamate",
     TESLAMATE_DB_QUERY_TIMEOUT_MS: "2500",
     MQTT_ENABLED: "true",
     MQTT_URL: "mqtt://mosquitto:1883",
@@ -88,21 +89,22 @@ test("loadConfig accepts environment overrides", () => {
     PUSH_NOTIFICATIONS_ENABLED: "true",
     NOTIFICATION_POLL_INTERVAL_MS: "30000",
     POST_TRIP_WATCH_MINUTES: "10",
+    POST_TRIP_SAFETY_GRACE_SECONDS: "120",
     NOTIFICATION_STATE_STORE_PATH: "/data/notification-state.json",
     NOTIFICATION_EVENT_HISTORY_LIMIT: "1000",
     APNS_ENABLED: "true",
     APNS_ENVIRONMENT: "production",
     APNS_TEAM_ID: "TEAM123456",
     APNS_KEY_ID: "KEY1234567",
-    APNS_BUNDLE_ID: "com.example.ttdeck",
-    APNS_PRIVATE_KEY_PATH: "/run/secrets/apns-test-key.p8",
+    APNS_BUNDLE_ID: "com.lagom.ttdeck",
+    APNS_PRIVATE_KEY_PATH: "/run/secrets/AuthKey_KEY1234567.p8",
     DEVICE_SECRET_REQUIRED: "true"
   });
 
   assert.deepEqual(config, {
     bindHost: "0.0.0.0",
     port: 5050,
-    publicBaseUrl: "https://ttdeck.example.test",
+    publicBaseUrl: "https://monitor.example.test",
     dataSourceMode: "teslamate",
     tokenSecret: "local-secret",
     setupSecret: "setup-secret",
@@ -116,7 +118,7 @@ test("loadConfig accepts environment overrides", () => {
     requestLogging: true,
     deviceSecretRequired: true,
     teslamate: {
-      databaseUrl: "postgres://db.example.test:5432/teslamate?user=readonly&password=placeholder",
+      databaseUrl: "postgres://readonly:secret@db.example.test:5432/teslamate",
       database: null,
       queryTimeoutMs: 2500
     },
@@ -134,6 +136,7 @@ test("loadConfig accepts environment overrides", () => {
       enabled: true,
       pollIntervalMs: 30000,
       postTripWatchMinutes: 10,
+      postTripSafetyGraceSeconds: 120,
       stateStorePath: "/data/notification-state.json",
       eventHistoryLimit: 1000,
       apns: {
@@ -141,9 +144,9 @@ test("loadConfig accepts environment overrides", () => {
         environment: "production",
         teamId: "TEAM123456",
         keyId: "KEY1234567",
-        bundleId: "com.example.ttdeck",
+        bundleId: "com.lagom.ttdeck",
         privateKey: "",
-        privateKeyPath: "/run/secrets/apns-test-key.p8"
+        privateKeyPath: "/run/secrets/AuthKey_KEY1234567.p8"
       }
     }
   });

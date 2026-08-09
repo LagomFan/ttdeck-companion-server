@@ -537,7 +537,7 @@ async function route(req, res, context = {}) {
     const saved = context.bindingStore.savePushToken(auth.tokenHash, {
       deviceToken,
       environment: pushEnvironment(body.environment),
-      bundleId: String(body.bundleId || context.config.notifications?.apns?.bundleId || "com.example.ttdeck"),
+      bundleId: String(body.bundleId || context.config.notifications?.apns?.bundleId || "com.lagom.ttdeck"),
       preferences: body.preferences && typeof body.preferences === "object" ? body.preferences : {},
       registeredAt: new Date().toISOString()
     });

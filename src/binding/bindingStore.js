@@ -45,7 +45,7 @@ function normalizePushTokenRecord(record, existingRecord = null) {
   }
 
   const environment = record.environment === "production" ? "production" : "development";
-  const bundleId = String(record.bundleId || "com.example.ttdeck").trim() || "com.example.ttdeck";
+  const bundleId = String(record.bundleId || "com.lagom.ttdeck").trim() || "com.lagom.ttdeck";
   const preferences = normalizePushPreferences(record.preferences || existingRecord?.preferences || {});
   return {
     deviceToken: token,

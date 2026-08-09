@@ -13,7 +13,7 @@ async function routeJson({
   remoteAddress = "203.0.113.10",
   headers = {},
   config = {
-    publicBaseUrl: "https://ttdeck.example.test",
+    publicBaseUrl: "https://monitor.example.test",
     tokenSecret: "test-secret",
     setupSecret: ""
   }
@@ -110,7 +110,7 @@ test("GET /api/vehicles returns fixture vehicles with token", async () => {
     assert.equal(result.body.ok, true);
     assert.deepEqual(
       result.body.data.vehicles.map((vehicle) => vehicle.id),
-      ["model-y-home", "model-3-work"]
+      ["demo-ev-home", "demo-ev-work"]
     );
   });
 });
@@ -128,7 +128,7 @@ test("authenticated clients can register and remove APNs device tokens", async (
       body: JSON.stringify({
         deviceToken,
         environment: "development",
-        bundleId: "com.example.ttdeck"
+        bundleId: "com.lagom.ttdeck"
       })
     });
     const registerBody = await registerResponse.json();
@@ -172,7 +172,7 @@ test("APNs device token registration validates token format", async () => {
 
 test("vehicle detail endpoints require bearer token", async () => {
   await withTestServer(createServer, async ({ baseUrl }) => {
-    const result = await getJson(baseUrl, "/api/vehicles/model-y-home/overview");
+    const result = await getJson(baseUrl, "/api/vehicles/demo-ev-home/overview");
 
     assert.equal(result.status, 401);
     assert.equal(result.body.ok, false);
@@ -184,18 +184,18 @@ test("vehicle detail endpoints return summaries", async () => {
   await withTestServer(createServer, async ({ baseUrl }) => {
     const authHeaders = await createAuthHeaders(baseUrl);
     const paths = [
-      "/api/vehicles/model-y-home/overview",
-      "/api/vehicles/model-y-home/safety",
-      "/api/vehicles/model-y-home/charging",
-      "/api/vehicles/model-y-home/trips",
-      "/api/vehicles/model-y-home/trends"
+      "/api/vehicles/demo-ev-home/overview",
+      "/api/vehicles/demo-ev-home/safety",
+      "/api/vehicles/demo-ev-home/charging",
+      "/api/vehicles/demo-ev-home/trips",
+      "/api/vehicles/demo-ev-home/trends"
     ];
 
     for (const path of paths) {
       const result = await getJson(baseUrl, path, authHeaders);
       assert.equal(result.status, 200, path);
       assert.equal(result.body.ok, true, path);
-      assert.equal(result.body.data.vehicleId, "model-y-home", path);
+      assert.equal(result.body.data.vehicleId, "demo-ev-home", path);
     }
   });
 });
@@ -215,10 +215,10 @@ test("vehicle section endpoints share in-flight fallback snapshot loads", async 
   await withTestServer(() => createServer({ dataSource }), async ({ baseUrl }) => {
     const authHeaders = await createAuthHeaders(baseUrl);
     const paths = [
-      "/api/vehicles/model-y-home/overview",
-      "/api/vehicles/model-y-home/safety",
-      "/api/vehicles/model-y-home/charging",
-      "/api/vehicles/model-y-home/trends"
+      "/api/vehicles/demo-ev-home/overview",
+      "/api/vehicles/demo-ev-home/safety",
+      "/api/vehicles/demo-ev-home/charging",
+      "/api/vehicles/demo-ev-home/trends"
     ];
     const results = await Promise.all(paths.map((path) => getJson(baseUrl, path, authHeaders)));
 
@@ -256,10 +256,10 @@ test("vehicle section endpoints prefer lightweight data source loaders", async (
   await withTestServer(() => createServer({ dataSource }), async ({ baseUrl }) => {
     const authHeaders = await createAuthHeaders(baseUrl);
     const paths = [
-      "/api/vehicles/model-y-home/overview",
-      "/api/vehicles/model-y-home/safety",
-      "/api/vehicles/model-y-home/charging",
-      "/api/vehicles/model-y-home/trends"
+      "/api/vehicles/demo-ev-home/overview",
+      "/api/vehicles/demo-ev-home/safety",
+      "/api/vehicles/demo-ev-home/charging",
+      "/api/vehicles/demo-ev-home/trends"
     ];
 
     for (const path of paths) {
@@ -274,11 +274,11 @@ test("vehicle section endpoints prefer lightweight data source loaders", async (
 test("realtime endpoint returns decode-compatible disabled payload", async () => {
   await withTestServer(createServer, async ({ baseUrl }) => {
     const authHeaders = await createAuthHeaders(baseUrl);
-    const result = await getJson(baseUrl, "/api/vehicles/model-y-home/realtime", authHeaders);
+    const result = await getJson(baseUrl, "/api/vehicles/demo-ev-home/realtime", authHeaders);
 
     assert.equal(result.status, 200);
     assert.equal(result.body.ok, true);
-    assert.equal(result.body.data.vehicleId, "model-y-home");
+    assert.equal(result.body.data.vehicleId, "demo-ev-home");
     assert.equal(result.body.data.available, false);
     assert.deepEqual(result.body.data.events, []);
     assert.deepEqual(result.body.data.connection, {
@@ -296,11 +296,11 @@ test("realtime endpoint returns decode-compatible disabled payload", async () =>
 test("trips endpoint supports pagination query parameters", async () => {
   await withTestServer(createServer, async ({ baseUrl }) => {
     const authHeaders = await createAuthHeaders(baseUrl);
-    const firstPage = await getJson(baseUrl, "/api/vehicles/model-y-home/trips?limit=1", authHeaders);
+    const firstPage = await getJson(baseUrl, "/api/vehicles/demo-ev-home/trips?limit=1", authHeaders);
     const nextCursor = firstPage.body.data.pagination.nextCursor;
     const secondPage = await getJson(
       baseUrl,
-      `/api/vehicles/model-y-home/trips?limit=1&cursor=${nextCursor}`,
+      `/api/vehicles/demo-ev-home/trips?limit=1&cursor=${nextCursor}`,
       authHeaders
     );
 
@@ -318,7 +318,7 @@ test("trip detail endpoint returns a single trip", async () => {
     const authHeaders = await createAuthHeaders(baseUrl);
     const result = await getJson(
       baseUrl,
-      "/api/vehicles/model-y-home/trips/my-trip-2026-06-24-commute",
+      "/api/vehicles/demo-ev-home/trips/my-trip-2026-06-24-commute",
       authHeaders
     );
 
@@ -332,7 +332,7 @@ test("trip detail endpoint returns a single trip", async () => {
 test("trip detail endpoint returns 404 for unknown trip", async () => {
   await withTestServer(createServer, async ({ baseUrl }) => {
     const authHeaders = await createAuthHeaders(baseUrl);
-    const result = await getJson(baseUrl, "/api/vehicles/model-y-home/trips/missing-trip", authHeaders);
+    const result = await getJson(baseUrl, "/api/vehicles/demo-ev-home/trips/missing-trip", authHeaders);
 
     assert.equal(result.status, 404);
     assert.equal(result.body.ok, false);
@@ -504,7 +504,7 @@ test("binding start rejects remote clients without setup secret", async () => {
 test("binding start rejects proxied public host without setup secret", async () => {
   const result = await routeJson({
     remoteAddress: "127.0.0.1",
-    headers: { host: "ttdeck.example.test" }
+    headers: { host: "monitor.example.test" }
   });
 
   assert.equal(result.status, 403);
@@ -527,7 +527,7 @@ test("binding start accepts remote clients with setup secret", async () => {
   const result = await routeJson({
     headers: { "x-setup-secret": "setup-secret" },
     config: {
-      publicBaseUrl: "https://ttdeck.example.test",
+      publicBaseUrl: "https://monitor.example.test",
       tokenSecret: "test-secret",
       setupSecret: "setup-secret"
     }
@@ -552,6 +552,21 @@ test("GET /api/setup/diagnostics returns fixture-mode checks", async () => {
       "mqtt",
       "vehicles"
     ]);
+    assert.deepEqual(
+      Object.fromEntries(result.body.data.checks.map((check) => [check.id, check.label])),
+      {
+        companion: "Companion Server",
+        dataSource: "Data Source",
+        teslamate: "Self-Hosted Data Source",
+        postgres: "Source Database",
+        mqtt: "Live Telemetry Feed",
+        vehicles: "Vehicle Data"
+      }
+    );
+    assert.doesNotMatch(
+      result.body.data.checks.map(({ label, message }) => `${label}: ${message}`).join("\n"),
+      /TeslaMate|Postgres|MQTT/i
+    );
   });
 });
 

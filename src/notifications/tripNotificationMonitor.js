@@ -8,8 +8,16 @@ function addMinutes(isoTimestamp, minutes) {
   return new Date(new Date(isoTimestamp).getTime() + minutes * 60 * 1000).toISOString();
 }
 
+function addSeconds(isoTimestamp, seconds) {
+  return new Date(new Date(isoTimestamp).getTime() + seconds * 1000).toISOString();
+}
+
 function isBeforeNow(isoTimestamp, now) {
   return !isoTimestamp || new Date(isoTimestamp).getTime() <= now();
+}
+
+function isAfterNow(isoTimestamp, now) {
+  return Boolean(isoTimestamp) && new Date(isoTimestamp).getTime() > now();
 }
 
 function optionalNumber(value) {
@@ -41,8 +49,12 @@ function isQuietHour(nowMs) {
   return hour >= 22 || hour < 7;
 }
 
+function displayNameFor(vehicle) {
+  return String(vehicle?.displayName || "").trim() || "车辆";
+}
+
 function tripTitle(vehicle, trip) {
-  const displayName = vehicle.displayName || "Tesla";
+  const displayName = displayNameFor(vehicle);
   if (!trip?.distanceKm) {
     return displayName;
   }
@@ -96,7 +108,7 @@ function chargingEventsForRealtime({ vehicle, previous, current, now }) {
     return [];
   }
 
-  const displayName = vehicle.displayName || "Tesla";
+  const displayName = displayNameFor(vehicle);
   const marker = timestampMarker(current, now);
   const powerText = current.chargerPowerKw == null ? "" : `，当前功率 ${current.chargerPowerKw.toFixed(1)} kW`;
   const events = [];
@@ -151,7 +163,7 @@ function batteryEventsForRealtime({ vehicle, previous, current, now }) {
     id: `battery-low-${vehicle.id}-${batteryLevel}-${marker}`,
     category: "battery",
     title: "电量偏低",
-    body: `${vehicle.displayName || "Tesla"} 当前电量 ${batteryLevel}%。`,
+    body: `${displayNameFor(vehicle)} 当前电量 ${batteryLevel}%。`,
     batteryLevel,
     previousBatteryLevel: Math.round(previous.batteryLevel),
     data: { vehicleId: String(vehicle.id), type: "battery_low", batteryLevel }
@@ -163,7 +175,7 @@ function safetyEventsForRealtime({ vehicle, previous, current, now }) {
     return [];
   }
 
-  const displayName = vehicle.displayName || "Tesla";
+  const displayName = displayNameFor(vehicle);
   const marker = timestampMarker(current, now);
   const checks = [
     ["doorsOpen", "车门未关", `${displayName} 当前显示有车门打开。`, "doors_open"],
@@ -198,7 +210,7 @@ function staleEventsForRealtime({ vehicle, previous, current, now }) {
     id: `stale-data-${vehicle.id}-${marker}`,
     category: "stale",
     title: "数据更新变慢",
-    body: `${vehicle.displayName || "Tesla"} 数据${ageText}。`,
+    body: `${displayNameFor(vehicle)} 数据${ageText}。`,
     data: { vehicleId: String(vehicle.id), type: "stale_data", ageMinutes }
   }];
 }
@@ -217,7 +229,7 @@ function parkingDrainEventsForOverview({ vehicle, previous, current }) {
     id: `parking-drain-${vehicle.id}-${parkingDrainPercent}-${current.lastUpdatedAt || ""}`,
     category: "parking",
     title: "停车耗电偏高",
-    body: `${vehicle.displayName || "Tesla"} 近期停车耗电 ${parkingDrainPercent}%。`,
+    body: `${displayNameFor(vehicle)} 近期停车耗电 ${parkingDrainPercent}%。`,
     parkingDrainPercent,
     previousParkingDrainPercent: Math.round(previous.parkingDrainPercent),
     data: { vehicleId: String(vehicle.id), type: "parking_drain", parkingDrainPercent }
@@ -256,7 +268,7 @@ function safetyEventsForPostTrip({ vehicle, realtime, driveId }) {
     return [];
   }
 
-  const displayName = vehicle.displayName || "Tesla";
+  const displayName = displayNameFor(vehicle);
   const events = [];
   if (realtime.safety.locked === false) {
     events.push({
@@ -383,7 +395,7 @@ class TripNotificationMonitor {
         id: `trip-started-${activeDrive.id}`,
         category: "trip",
         title: "行程已开始",
-        body: `${vehicle.displayName || "Tesla"} 开始新的行程。`,
+        body: `${displayNameFor(vehicle)} 开始新的行程。`,
         data: { vehicleId: String(vehicle.id), driveId: String(activeDrive.id), type: "trip_started" }
       });
       this.stateStore.updateVehicle(vehicle.id, (state) => {
@@ -401,10 +413,12 @@ class TripNotificationMonitor {
         data: { vehicleId: String(vehicle.id), driveId: String(latestEndedDrive.id), type: "trip_ended" }
       });
       const endedAt = latestEndedDrive.endedAt || isoNow(this.now);
+      const safetyAfter = addSeconds(isoNow(this.now), this.config.postTripSafetyGraceSeconds || 0);
       this.stateStore.updateVehicle(vehicle.id, (state) => {
         state.activeDriveId = state.activeDriveId === String(latestEndedDrive.id) ? null : state.activeDriveId;
         state.lastEndedDriveId = String(latestEndedDrive.id);
         state.postTripDriveId = String(latestEndedDrive.id);
+        state.postTripSafetyAfter = safetyAfter;
         state.postTripWatchUntil = addMinutes(endedAt, this.config.postTripWatchMinutes);
       });
     }
@@ -442,8 +456,13 @@ class TripNotificationMonitor {
     if (isBeforeNow(current.postTripWatchUntil, this.now)) {
       this.stateStore.updateVehicle(vehicle.id, (state) => {
         state.postTripDriveId = null;
+        state.postTripSafetyAfter = null;
         state.postTripWatchUntil = null;
       });
+      return;
+    }
+
+    if (isAfterNow(current.postTripSafetyAfter, this.now)) {
       return;
     }
 

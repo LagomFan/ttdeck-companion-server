@@ -42,10 +42,11 @@ function createMonitorHarness() {
     }
   };
   let targetPreferences = {};
+  let vehicleDisplayName = "Model Y";
   const sent = [];
   const dataSource = {
     async listVehicles() {
-      return [{ id: "1", displayName: "Model Y" }];
+      return [{ id: "1", displayName: vehicleDisplayName }];
     },
     async getTripNotificationState() {
       return { vehicleId: "1", ...tripState };
@@ -58,7 +59,8 @@ function createMonitorHarness() {
     config: {
       enabled: true,
       pollIntervalMs: 45000,
-      postTripWatchMinutes: 15
+      postTripWatchMinutes: 15,
+      postTripSafetyGraceSeconds: 90
     },
     dataSource,
     realtimeStore: {
@@ -72,7 +74,7 @@ function createMonitorHarness() {
           tokenHash: "token-hash",
           deviceToken: "a".repeat(64),
           environment: "development",
-          bundleId: "com.example.ttdeck",
+          bundleId: "com.lagom.ttdeck",
           preferences: targetPreferences
         }];
       },
@@ -107,6 +109,9 @@ function createMonitorHarness() {
     setTargetPreferences(nextPreferences) {
       targetPreferences = nextPreferences;
     },
+    setVehicleDisplayName(nextDisplayName) {
+      vehicleDisplayName = nextDisplayName;
+    },
     advance(ms) {
       timestamp += ms;
     }
@@ -128,6 +133,27 @@ test("TripNotificationMonitor seeds current state without pushing history", asyn
   await harness.monitor.tick();
 
   assert.deepEqual(harness.sent, []);
+});
+
+test("TripNotificationMonitor uses a generic vehicle fallback in remote notifications", async () => {
+  const harness = createMonitorHarness();
+  harness.setVehicleDisplayName("");
+  await harness.monitor.tick();
+
+  harness.setTripState({
+    activeDrive: {
+      id: "generic-vehicle-trip",
+      startedAt: "2026-07-01T10:01:00.000Z",
+      endedAt: null,
+      distanceKm: 0
+    },
+    latestEndedDrive: null
+  });
+  await harness.monitor.tick();
+
+  assert.equal(harness.sent.length, 1);
+  assert.equal(harness.sent[0].body, "车辆 开始新的行程。");
+  assert.doesNotMatch(harness.sent[0].body, /Tesla|Model [3SYX]/i);
 });
 
 test("TripNotificationMonitor sends trip start, trip end, and post-trip safety once", async () => {
@@ -171,9 +197,71 @@ test("TripNotificationMonitor sends trip start, trip end, and post-trip safety o
     harness.sent.map((event) => event.eventId),
     [
       "trip-started-101",
+      "trip-ended-101"
+    ]
+  );
+
+  harness.advance(90 * 1000);
+  await harness.monitor.tick();
+
+  assert.deepEqual(
+    harness.sent.map((event) => event.eventId),
+    [
+      "trip-started-101",
       "trip-ended-101",
       "post-trip-unlocked-101",
       "post-trip-doors-open-101"
+    ]
+  );
+});
+
+test("TripNotificationMonitor delays post-trip safety until the grace period expires", async () => {
+  const harness = createMonitorHarness();
+  await harness.monitor.tick();
+
+  harness.setRealtime({
+    available: true,
+    safety: {
+      locked: false,
+      doorsOpen: true,
+      windowsOpen: false,
+      frunkOpen: false,
+      trunkOpen: false
+    }
+  });
+  harness.setTripState({
+    activeDrive: null,
+    latestEndedDrive: {
+      id: "104",
+      startedAt: "2026-07-01T09:40:00.000Z",
+      endedAt: "2026-07-01T10:00:00.000Z",
+      distanceKm: 4.1
+    }
+  });
+  await harness.monitor.tick();
+
+  assert.deepEqual(
+    harness.sent.map((event) => event.eventId),
+    ["trip-ended-104"]
+  );
+
+  harness.advance(89 * 1000);
+  await harness.monitor.tick();
+
+  assert.deepEqual(
+    harness.sent.map((event) => event.eventId),
+    ["trip-ended-104"]
+  );
+
+  harness.advance(1000);
+  await harness.monitor.tick();
+
+  assert.deepEqual(
+    harness.sent.map((event) => event.eventId),
+    [
+      "trip-ended-104",
+      "post-trip-unlocked-104",
+      "post-trip-doors-open-104"
     ]
   );
 });

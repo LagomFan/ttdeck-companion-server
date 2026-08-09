@@ -13,7 +13,7 @@ function renderSetupPage({ publicBaseUrl }) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TTDeck Companion Server</title>
+  <title>TTDeck Companion</title>
   <style>
     :root { color-scheme: dark; }
     body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #101114; color: #f4f5f7; }
@@ -40,7 +40,7 @@ function renderSetupPage({ publicBaseUrl }) {
 <body>
   <main>
     <section>
-      <h1>TTDeck Companion Server</h1>
+      <h1>TTDeck Companion</h1>
       <p class="muted">This server exposes a read-only API for your own iPhone app.</p>
       <p>Server URL: <code>${escapeHtml(publicBaseUrl)}</code></p>
       <div class="grid">

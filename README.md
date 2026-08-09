@@ -85,6 +85,8 @@ Important variables:
 - `MQTT_*`: Optional TeslaMate MQTT realtime ingestion settings.
 - `PUSH_NOTIFICATIONS_ENABLED`: Enables the trip push monitor. Defaults to
   false.
+- `POST_TRIP_SAFETY_GRACE_SECONDS`: Wait time after a trip ends before
+  evaluating lock, door, window, and trunk alerts. Defaults to `90`.
 - `APNS_*`: Optional advanced remote push settings. Disabled by default.
 
 For production, create a read-only Postgres user for the Companion Server. The

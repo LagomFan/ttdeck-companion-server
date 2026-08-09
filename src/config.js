@@ -156,6 +156,11 @@ function loadConfig(env = process.env) {
         "POST_TRIP_WATCH_MINUTES",
         15
       ),
+      postTripSafetyGraceSeconds: parsePositiveInteger(
+        env.POST_TRIP_SAFETY_GRACE_SECONDS,
+        "POST_TRIP_SAFETY_GRACE_SECONDS",
+        90
+      ),
       stateStorePath: env.NOTIFICATION_STATE_STORE_PATH || "",
       eventHistoryLimit: parsePositiveInteger(
         env.NOTIFICATION_EVENT_HISTORY_LIMIT,
@@ -172,7 +177,7 @@ function loadConfig(env = process.env) {
         ),
         teamId: env.APNS_TEAM_ID || "",
         keyId: env.APNS_KEY_ID || "",
-        bundleId: env.APNS_BUNDLE_ID || "com.example.ttdeck",
+        bundleId: env.APNS_BUNDLE_ID || "com.lagom.ttdeck",
         privateKey: env.APNS_PRIVATE_KEY || "",
         privateKeyPath: env.APNS_PRIVATE_KEY_PATH || ""
       }

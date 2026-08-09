@@ -15,6 +15,7 @@ function normalizeVehicleState(state = {}) {
     lastStartedDriveId: state.lastStartedDriveId == null ? null : String(state.lastStartedDriveId),
     lastEndedDriveId: state.lastEndedDriveId == null ? null : String(state.lastEndedDriveId),
     postTripDriveId: state.postTripDriveId == null ? null : String(state.postTripDriveId),
+    postTripSafetyAfter: state.postTripSafetyAfter || null,
     postTripWatchUntil: state.postTripWatchUntil || null,
     lastRealtime: state.lastRealtime && typeof state.lastRealtime === "object" ? state.lastRealtime : null,
     lastOverview: state.lastOverview && typeof state.lastOverview === "object" ? state.lastOverview : null,
