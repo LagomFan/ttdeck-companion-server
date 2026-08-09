@@ -29,6 +29,10 @@ git clone https://github.com/LagomFan/ttdeck-companion-server.git
 cd ttdeck-companion-server
 ```
 
+No Git client is required for a one-time install. Download and extract the
+[main branch ZIP](https://github.com/LagomFan/ttdeck-companion-server/archive/refs/heads/main.zip)
+instead.
+
 ## Run Locally
 
 ```bash

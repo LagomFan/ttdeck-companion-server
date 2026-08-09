@@ -1,5 +1,21 @@
 # TTDeck Companion Server Manual Setup
 
+## Download Companion Server
+
+The canonical public repository is:
+
+<https://github.com/LagomFan/ttdeck-companion-server>
+
+Clone it into the folder name used by the setup guides:
+
+```bash
+git clone https://github.com/LagomFan/ttdeck-companion-server.git companion-server
+cd companion-server
+```
+
+For a one-time install without Git, download and extract the
+[main branch ZIP](https://github.com/LagomFan/ttdeck-companion-server/archive/refs/heads/main.zip).
+
 Choose your language:
 
 | Locale | Guide |

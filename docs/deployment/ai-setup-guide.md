@@ -11,9 +11,13 @@ https://github.com/LagomFan/ttdeck-companion-server
 If the user has not downloaded the backend yet, ask them to clone it on the server or development machine:
 
 ```bash
-git clone https://github.com/LagomFan/ttdeck-companion-server.git
-cd ttdeck-companion-server
+git clone https://github.com/LagomFan/ttdeck-companion-server.git companion-server
+cd companion-server
 ```
+
+If Git is unavailable, use the
+[main branch ZIP](https://github.com/LagomFan/ttdeck-companion-server/archive/refs/heads/main.zip)
+and enter the extracted folder instead.
 
 This document has two jobs:
 
